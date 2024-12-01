@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Frequently Asked Questions {% endblock %}
+
+{% block content %}
+    <section class='flex flex-col justify-center py-12 xl:py-0'>
+        <!-- {/* BACKGROUND */} -->
+        <div class="absolute inset-0 w-full h-full -z-10">
+            <img 
+                src="{% static 'landingpics/faqsbg.png' %}" 
+                class="object-cover w-full "
+                alt="Contact Us Background" 
+            />
+        </div>
+
+        <!-- {/* FREQUENTLY ASKED QUESTIONS */} -->
+        <div class="container flex items-end justify-end pb-40 text-maroon pt-28">
+            <h1 class='text-6xl font-bold text-end mr-40 pt-28'>FREQUENTLY <br /> ASKED QUESTIONS</h1>
+        </div>
+
+
+            <div class="p-10 pt-40 pb-40 flex flex-col relative justify-center items-center bg-gradient-to-r from-dmaroon to-maroon text-white2">
+                 <!-- QUESTION 1 -->
+                <div class="w-[80%] rounded-lg overflow-hidden">
+                    <!-- Accordion Header -->
+                     <div class="header px-5 py-3 relative border-b-2">
+                            <input type="radio" name="faq" id="faq1" class="hidden peer">
+                            <label for="faq1" class="flex items-center text-lg font-semibold cursor-pointer relative w-full
+                            after:absolute after:content-['+'] after:right-5 after:text-2xl
+                            after:text-white2 hover:after:text-gray-900 peer-checked:after:transform peer-checked:after:rotate-45">
+                                <!-- Number Indicator -->
+                                <h2 class="mr-2 h-8 w-8 bg-maroon grid place-items-center text-white2 rounded-full">01</h2>
+                                <!-- Question Text -->
+                                <h3>How do I vote using ElectEd?</h3>
+                            </label>
+                            <div class="answer h-0 overflow-hidden transition-all ease-in-out duration-100 peer-checked:h-full">
+                                <p class="py-5 px-5">
+                                    To vote, simply log in to the platform with your school credentials, view the list of candidates, and select your preferred choices. Once you confirm your vote, it will be securely submitted.
+                                </p>
+                            </div>
+                    </div>
+                </div>
+
+
+                <!-- QUESTION 2 -->
+                <div class="w-[80%] rounded-lg overflow-hidden">
+                    <!-- Accordion Header -->
+                     <div class="header px-5 py-3 relative border-b-2">
+                            <input type="radio" name="faq" id="faq2" class="hidden peer">
+                            <label for="faq2" class="flex items-center text-lg font-semibold cursor-pointer relative w-full
+                            after:absolute after:content-['+'] after:right-5 after:text-2xl
+                            after:text-white2 hover:after:text-gray-900 peer-checked:after:transform peer-checked:after:rotate-45">
+                                <!-- Number Indicator -->
+                                <h2 class="mr-2 h-8 w-8 bg-maroon grid place-items-center text-white2 rounded-full">02</h2>
+                                <!-- Question Text -->
+                                <h3>Is my vote anonymous?</h3>
+                            </label>
+                            <div class="answer h-0 overflow-hidden transition-all ease-in-out duration-100 peer-checked:h-full">
+                                <p class="py-5 px-5">
+                                    Yes, all votes cast through ElectEd are completely anonymous. We use secure encryption to ensure your vote cannot be traced back to you.
+                                </p>
+                            </div>
+                    </div>
+                </div>
+
+                 <!-- QUESTION 3 -->
+                 <div class="w-[80%] rounded-lg overflow-hidden">
+                    <!-- Accordion Header -->
+                     <div class="header px-5 py-3 relative border-b-2">
+                            <input type="radio" name="faq" id="faq3" class="hidden peer">
+                            <label for="faq3" class="flex items-center text-lg font-semibold cursor-pointer relative w-full
+                            after:absolute after:content-['+'] after:right-5 after:text-2xl
+                            after:text-white2 hover:after:text-gray-900 peer-checked:after:transform peer-checked:after:rotate-45">
+                                <!-- Number Indicator -->
+                                <h2 class="mr-2 h-8 w-8 bg-maroon grid place-items-center text-white2 rounded-full">03</h2>
+                                <!-- Question Text -->
+                                <h3>Can I vote from my mobile device?</h3>
+                            </label>
+                            <div class="answer h-0 overflow-hidden transition-all ease-in-out duration-100 peer-checked:h-full">
+                                <p class="py-5 px-5">
+                                    Absolutely! ElectEd is mobile-friendly, allowing you to vote from any device, whether it’s your smartphone, tablet, or desktop.
+                                </p>
+                            </div>
+                    </div>
+                </div>
+
+                 <!-- QUESTION 4 -->
+                 <div class="w-[80%] rounded-lg overflow-hidden">
+                    <!-- Accordion Header -->
+                     <div class="header px-5 py-3 relative border-b-2">
+                            <input type="radio" name="faq" id="faq4" class="hidden peer">
+                            <label for="faq4" class="flex items-center text-lg font-semibold cursor-pointer relative w-full
+                            after:absolute after:content-['+'] after:right-5 after:text-2xl
+                            after:text-white2 hover:after:text-gray-900 peer-checked:after:transform peer-checked:after:rotate-45">
+                                <!-- Number Indicator -->
+                                <h2 class="mr-2 h-8 w-8 bg-maroon grid place-items-center text-white2 rounded-full">04</h2>
+                                <!-- Question Text -->
+                                <h3>How secure is ElectEd?</h3>
+                            </label>
+                            <div class="answer h-0 overflow-hidden transition-all ease-in-out duration-100 peer-checked:h-full">
+                                <p class="py-5 px-5">
+                                    ElectEd uses industry-standard encryption and security protocols to protect the integrity of every vote, ensuring a secure and tamper-proof election process.
+                                 </p>
+                            </div>
+                    </div>
+                </div>
+
+                 <!-- QUESTION 5 -->
+                 <div class="w-[80%] rounded-lg overflow-hidden">
+                    <!-- Accordion Header -->
+                     <div class="header px-5 py-3 relative border-b-2">
+                            <input type="radio" name="faq" id="faq5" class="hidden peer">
+                            <label for="faq5" class="flex items-center text-lg font-semibold cursor-pointer relative w-full
+                            after:absolute after:content-['+'] after:right-5 after:text-2xl
+                            after:text-white2 hover:after:text-gray-900 peer-checked:after:transform peer-checked:after:rotate-45">
+                                <!-- Number Indicator -->
+                                <h2 class="mr-2 h-8 w-8 bg-maroon grid place-items-center text-white2 rounded-full">05</h2>
+                                <!-- Question Text -->
+                                <h3>Can I change my vote after submission?</h3>
+                            </label>
+                            <div class="answer h-0 overflow-hidden transition-all ease-in-out duration-100 peer-checked:h-full">
+                                <p class="py-5 px-5">
+                                    No, once your vote is submitted and confirmed, it cannot be changed. This ensures the integrity and finality of the election results.
+                                </p>
+                            </div>
+                    </div>
+                </div>
+
+                <!-- QUESTION 6 -->
+                <div class="w-[80%] rounded-lg overflow-hidden">
+                    <!-- Accordion Header -->
+                     <div class="header px-5 py-3 relative border-b-2">
+                            <input type="radio" name="faq" id="faq6" class="hidden peer">
+                            <label for="faq6" class="flex items-center text-lg font-semibold cursor-pointer relative w-full
+                            after:absolute after:content-['+'] after:right-5 after:text-2xl
+                            after:text-white2 hover:after:text-gray-900 peer-checked:after:transform peer-checked:after:rotate-45">
+                                <!-- Number Indicator -->
+                                <h2 class="mr-2 h-8 w-8 bg-maroon grid place-items-center text-white2 rounded-full">06</h2>
+                                <!-- Question Text -->
+                                <h3>Who can I contact for support?</h3>
+                            </label>
+                            <div class="answer h-0 overflow-hidden transition-all ease-in-out duration-100 peer-checked:h-full">
+                                <p class="py-5 px-5">
+                                    If you need assistance, you can reach out to your election administrator or contact us directly through the Contact Us page.
+                                </p>
+                            </div>
+                    </div>
+                </div>
+
+                
+            </div>
+    </section>
+{% endblock %}

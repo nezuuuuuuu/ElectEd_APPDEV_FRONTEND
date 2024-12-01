@@ -1,0 +1,476 @@
+    {% extends 'dashboard_base.html' %}
+    {% load static %}
+
+    {% block title %}Dashboard-Votes-Candidates{% endblock %}
+
+    
+    {% block content %}
+        <!-- DONE -->
+        <!-- Search bar -->
+        <meta name="csrf-token" content="{{ csrf_token }}">
+        <div class="flex px-4 border rounded-full w-1/3 border-maroon">
+            <form method="get" action="{% url 'votes' %}" class="flex w-full">
+                <img src="/static/icons/search_icon.svg" class="cursor-pointer" alt="">
+                <input 
+                    type="text" 
+                    name="q" 
+                    class="w-full border-none" 
+                    placeholder="Search" 
+                    value="{{ request.GET.q|default:'' }}">
+                <button type="submit" class="hidden">Search</button>
+            </form>
+        </div>
+        
+    {% endblock %}
+
+
+    
+
+    {% block body %}
+    <section class='flex flex-col justify-center max-w-5xl py-12 mx-auto xl:py-0'>
+       {%if disabled == 'disabled'%}
+        <div class="flex justify-between items-center relative px-8 pt-2 pl-6  mb-4 pb-20">
+            <button class="absolute mx-8 my-8 font-bold top-4 right-4" onclick="window.history.back()">
+                <img src="{% static 'landingpics/arrowleft.png' %}" class="object-cover h-full p-3 rounded-lg border-maroon hover:bg-maroon/30" alt="No Image">
+            </button>
+            <h1 class='text-4xl font-bold text-maroon px-28'>
+                Your vote is recorded.<span class="text-dmaroon"> Thank you for participating!</span>
+            </h1>
+        </div>
+        {%elif election.is_close%}
+            <div class="flex justify-between items-center relative px-8 pt-2 pl-6  mb-4 pb-20">
+                <button class="absolute mx-8 my-8 font-bold top-4 right-4" onclick="window.history.back()">
+                    <img src="{% static 'landingpics/arrowleft.png' %}" class="object-cover h-full p-3 rounded-lg border-maroon hover:bg-maroon/30" alt="No Image">
+                </button>
+                <h1 class='text-4xl font-bold text-maroon px-28'>
+                    You did not vote in this election.<span class="text-dmaroon"></span>
+                </h1>
+            </div>
+        {% else %}
+        <div class="flex justify-between items-center relative px-8 pt-2 pl-6  mb-4 pb-20">
+            <button class="absolute mx-8 my-8 font-bold top-4 right-4" onclick="window.history.back()">
+                <img src="{% static 'landingpics/arrowleft.png' %}" class="object-cover h-full p-3 rounded-lg border-maroon hover:bg-maroon/30" alt="No Image">
+            </button>
+            <h1 class='text-4xl font-bold text-maroon px-28'>
+                CAST YOUR VOTES NOW for <span class="text-dmaroon">{{ election.title }}</span>!
+            </h1>
+        </div>
+       
+        {% endif %}
+        {% for position in positions %}
+        <div class='flex flex-col items-center justify-center gap-3 pt-10 text-center'>
+            <h1 class='pt-2 pl-6 mb-4 text-2xl font-bold text-dark-maroon px-28'>{{ position.title }}</h1>
+            <div class='container grid w-3 grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 mb-28 px-28 xl:grid-cols-3'>
+                {%if not position.has_candidates%}
+
+                no candidates for {{position.title}}
+                {%endif%}
+                {% for candidate in candidates %}
+                   
+                    {% if candidate.position == position and candidate.election == election %}
+
+                        <div onclick="openModal(
+                            '{{ candidate.name }}', 
+                            '{{ candidate.year }}', 
+                            '{{ candidate.course }}', 
+                            '{{ position.title }}', 
+                            '{% if candidate.image %}{{ candidate.image.url }}{% else %}{% static 'landingpics/guwang.png' %}{% endif %}', 
+                            '{{ candidate.platforms|escapejs }}',
+                            '{{candidate.partylist}}'
+                            )"
+                            class="cursor-pointer flex flex-col items-center justify-center h-full px-10 py-5 overflow-hidden text-center transition-shadow transition-transform transform border-2 hover:scale-105 hover:shadow-2xl border-maroon rounded-xl text-maroon w-60 
+                                    {% if candidate.id|stringformat:"s" in voted_ids %}
+                                        bg-maroon/30
+                                        scale-105
+                                    {% endif %}">
+                            <div class="w-40 h-40 mb-2 overflow-hidden border-4 rounded-full border-maroon py10">
+                                {% if candidate.image %}
+                                    <img src="{{ candidate.image.url }}" class="object-cover w-full h-full rounded-full" alt="{{ candidate.name }}">
+                                {% else %}
+                                    <img src="{% static 'landingpics/default.png' %}" class="object-cover h-full rounded-full" alt="No Image">
+                                {% endif %}
+                            </div>
+                            <div class="container py-5">
+                                <h1 class='text-2xl font-bold text-center bg-transparent'>{{ candidate.name }}</h1>
+                                <h3 class='font-medium text-center bg-transparent'>{{ candidate.year }}</h3>
+                            </div>
+                            <div class="container flex flex-row justify-center gap-2">
+                                <a>
+                                    
+                                    {% if disabled == 'disabled' or election.is_close  %}
+                                    
+
+                                    {% else %}
+                                    <button 
+                                    onclick="selectCandidate('{{position.title }}','{{position.max_selection}}', '{{ candidate.name }}','{{candidate.id}}', this);event.stopPropagation()" 
+                             class="vote-button hover:bg-maroon2 active:bg-dmaroon focus:bg-dmaroon px-12 py-2 mb-2 font-medium rounded-full bg-maroon text-white2 w-36">
+
+                             Vote
+                             </button>
+                                    {% endif %} 
+                                                 
+                           
+                                  
+                                </a>
+                                <button onclick="openModal(
+                                    '{{ candidate.name }}', 
+                                    '{{ candidate.year }}', 
+                                    '{{ candidate.course }}', 
+                                    '{{ position.title }}', 
+                                    '{% if candidate.image %}{{ candidate.image.url }}{% else %}{% static 'landingpics/guwang.png' %}{% endif %}', 
+                                    '{{ candidate.platforms|escapejs }}'); 
+                                    "class="w-32 px-4 py-2 mb-2 font-medium transition-transform border-2 rounded-full hover:bg-maroon hover:text-white2 border-maroon text-maroon">
+                                    View&nbsp;Details
+                                </button>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        
+        
+
+        <!-- Submit Button -->
+        <div class="flex justify-between mt-8 mb-10 mx-28">
+          
+
+
+        {% if disabled == 'disabled' or election.is_close %}
+        <button onclick="resetChanges()" class="w-60 px-2 py-2 my-2 font-medium border-0 rounded-full opacity-0" disabled>
+        </button>
+        <div class="flex items-center justify-between gap-10 ">
+           
+            <p class='text-2xl font-bold text-center bg-transparent' id='demo'></p>
+            <button 
+            id="checkResultsBtn" 
+            type="submit" 
+            onclick="window.location.href='{% url 'results' election.id %}'"     
+            class="w-52 px-10 py-3 my-2 font-medium text-white rounded-full bg-disablecolor cursor-not-allowed " disabled>
+            Check Results
+        </button>
+        <div>
+   
+    {% else %}
+        <button onclick="resetChanges()" class="w-52 px-4 py-3 my-2 font-medium border-2 rounded-full hover:bg-maroon hover:text-white2 border-maroon text-maroon">
+            Reset Changes
+        </button>
+        <button 
+            id="submitVotesBtn" 
+            type="submit" 
+            onclick="confirmSubmit()" 
+            class="w-52 px-10 py-2 my-2 font-medium text-white rounded-full bg-maroon hover:bg-gradient-to-r from-dmaroon to-maroon">
+            Submit Votes
+        </button>
+    {% endif %}
+        </div>
+
+        <!-- Modal Structure -->
+        <div id="candidateModal" class="fixed inset-0 flex items-center justify-center hidden bg-maroon/10" onclick="closeModal(event)">
+            <div class="bg-white ml-24 left-52 p-8 shadow-md rounded-lg w-[70%] flex-col items-start justify-start my-20 modal-content" onclick="event.stopPropagation()">
+                <button onclick="closeModal()" class="absolute mx-8 my-8 font-bold top-4 right-4">
+                    <img src="{% static 'landingpics/arrowleft.png' %}" class="object-cover h-full p-3 rounded-lg border-maroon hover:bg-maroon/30" alt="No Image">
+                </button>
+                
+                <!-- image and info -->
+                <div class="flex items-center mx-20 my-20"> 
+                    <img id="modalImage" src="" alt="Candidate Image" class="object-cover w-52 mx-12 mb-4 border-4 rounded-full h-52 border-maroon">
+                    <div class="mx-10">
+                        <p class="text-1xl text-maroon">Vote</p>
+                        <h2 id="modalName" class="mb-2 text-2xl font-bold text-dmaroon"></h2>
+                        <p class="text-1xl text-maroon">for <span id="modalPosition" class="font-bold text-maroon"></span></p>
+                        <div class="flex items-center">
+                            <img src="{% static 'landingpics/graduation cap2.png' %}" alt="" class="mr-2 h-auto w-6"> 
+                            <p id="modalCourse" class="font-medium text-1xl text-maroon"></p>
+                        </div>   
+                    <div class="flex items-center">
+                            <img src="{% static 'landingpics/age2.png' %}" alt="" class="mr-2 h-auto w-6"> 
+                            <p id="modalYear" class="font-medium text-1xl text-maroon"></p>
+                    </div>
+                    <div class="flex items-center">
+                        <img src="{% static 'landingpics/partylist.png' %}" alt="" class="mr-2 h-auto w-6"> 
+                        <p id="modalPartyList" class="font-medium text-1xl text-maroon"></p>
+                    </div>  
+                    </div>  
+                </div>
+
+                <div class="flex-col items-center justify-center mx-20 my-20">
+                    <p class="text-2xl font-bold text-maroon">Campaign Platform</p>
+                    <p id="modalPlatform" class="mt-4 font-medium text-1sxl text-maroon">Platform 1</p>   
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <script>
+        
+        const selectedCandidates = {}; // Track selected candidates by position
+            
+        function selectCandidate(position,max_selection, candidateName,candidate_id, button) {
+            // Get the parent container (the div holding the candidate's details)
+            const container = button.closest('.border-maroon');
+           
+            if (selectedCandidates[position]) {
+               
+                if(selectedCandidates[position].candidate_id.includes(candidate_id)){
+                    index=selectedCandidates[position].candidate_id.indexOf(candidate_id);
+
+                    selectedCandidates[position].candidate_id.splice(index,1);
+                    selectedCandidates[position].button.splice(index,1);
+                    selectedCandidates[position].container.splice(index,1);
+                    selectedCandidates[position].name.splice(index,1);
+                    selectedCandidates[position].count--;
+                  
+
+                    button.classList.remove('bg-dmaroon');
+                    button.classList.add('bg-maroon');
+                    button.classList.add('active:bg-dmaroon');
+                    button.innerText = 'Vote';
+                  
+                   
+                    container.style.borderColor = 'maroon'; 
+                    container.style.borderWidth = '2px'; 
+                    if (selectedCandidates[position].count == 0) {
+                        //alert(position)
+                         delete selectedCandidates[position];
+                      
+                        // Check if the selectedCandidates array is empty after removal
+                        if (Object.keys(selectedCandidates).length == 0) {
+                            resetChanges();  // Call the function to reset changes
+                            //alert('reset');  // Optional: //alert for confirmation
+                        }
+                    }
+                 
+                   
+                    return;
+                }
+              
+                if(selectedCandidates[position].count < max_selection){
+              
+
+                   
+                    selectedCandidates[position].name.push(candidateName);
+                    
+                    selectedCandidates[position].button.push(button);
+                    selectedCandidates[position].container.push(container);
+                    selectedCandidates[position].candidate_id.push(candidate_id);
+                    selectedCandidates[position].count++; 
+                }else {
+                    return;
+                }    
+              
+            } else if(!selectedCandidates[position] ) {
+                //alert('first')
+             selectedCandidates[position] = { 
+                name: [candidateName], 
+                button: [button],
+                container: [container],
+                candidate_id: [candidate_id],
+                count: 1
+                };
+              
+            } else{
+                return;
+            }      
+         
+            // Change the button style
+            button.classList.add('bg-dmaroon');
+            button.classList.remove('bg-maroon');
+            button.innerHTML = '<span class="text-2xl font-bold">✔</span>';
+
+            // Increase the container's border color and size
+            container.style.borderColor = '#A41C30'; // Set border color to dmaroon
+            container.style.borderWidth = '5px'; // Set border size to 8px
+        }
+        function resetChanges() {
+            // Loop through all positions in selectedCandidates
+            Object.values(selectedCandidates).forEach(({ button, container, candidate_id, name }) => {
+                // Loop through the arrays of button and container
+                for (let i = 0; i < button.length; i++) {
+                    // Reset button styles
+                    button[i].classList.remove('bg-dmaroon');
+                    button[i].classList.add('bg-maroon');
+                    button[i].classList.add('active:bg-dmaroon');
+                    button[i].innerText = 'Vote';
+                    
+                    // Reset container's border color and width
+                    container[i].style.borderColor = 'maroon';
+                    container[i].style.borderWidth = '2px';
+                }
+            });
+            
+            for (let key in selectedCandidates) {
+                if (selectedCandidates.hasOwnProperty(key)) {
+                    delete selectedCandidates[key];
+                }
+            }
+        }
+        // Function to open the modal and set candidate details
+        function openModal(name, year, course, positionTitle, imageUrl, platform,partylist) {
+            console.log(platform);
+            document.getElementById("modalName").innerText = name;
+            document.getElementById("modalYear").innerText = year;
+            document.getElementById("modalImage").src = imageUrl;
+            document.getElementById("modalCourse").innerText = course; 
+            document.getElementById("modalPosition").innerText = positionTitle;
+            document.getElementById("modalPlatform").innerText = platform || "No platform information available"; 
+            document.getElementById("modalPartyList").innerText = partylist
+
+            document.getElementById("candidateModal").classList.remove("hidden");
+            document.body.classList.add("no-scroll");
+        }
+
+        // Function to close the modal
+        function closeModal(event) {
+            const modal = document.getElementById("candidateModal");
+
+            // If no event is provided or the click is outside the modal content, close the modal
+            if (!event || event.target === modal) {
+                modal.classList.add("hidden");
+                document.body.classList.remove("no-scroll");
+            }
+        }
+
+        //styling
+      
+
+        // document.getElementById("candidateModal").addEventListener("click", (event) => {
+        //     event.stopPropagation(); // Prevent modal close from affecting other elements
+        // });
+
+        // Function for submit confirmation
+        // Function for submit confirmation
+
+        
+        
+        function confirmSubmit() {
+            // Prepare the data to send to the server
+            const votes = [];
+
+            // Collect the selected candidates
+            for (const position in selectedCandidates) {
+                if (selectedCandidates.hasOwnProperty(position)) {
+                    const candidate = selectedCandidates[position];
+                    votes.push({
+                        position: position,
+                        candidate_id: candidate.candidate_id
+                    });
+                }
+            }
+
+            // If no votes have been selected, display an //alert
+            if (votes.length === 0) {
+                //alert('Please select candidates to submit your votes.');
+                return;
+            }
+
+            // Send the selected votes to the server
+            fetch('/dashboard/submit-vote/', {
+                method: 'POST',  // This ensures the request is a POST
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrf-token]').content // CSRF token for Django
+                },
+                body: JSON.stringify({
+                    votes: votes
+                })
+            })
+            .then(response => response.json())  // Parse the JSON response from the server
+            .then(data => {
+                if (data.success) {
+                    //alert('Your votes have been successfully submitted!');
+                    window.location.href = '';
+                    // Optionally, redirect the user or clear the form
+                    // window.location.href = '/thank-you'; // Example redirection
+                } else {
+                    //alert('There was an issue submitting your votes. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                //alert('An error occurred while submitting your votes.');
+            });
+        }
+
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.vote-button')) {
+                return;
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            toggleButtonState(); // Call function after DOM content is loaded
+        });
+
+        function toggleButtonState() {
+            const button = document.getElementById('submitVotesBtn');
+            if (button.hasAttribute('disabled')) {
+                // Change color to gray and remove hover effect
+                button.classList.remove('hover:bg-gradient-to-r', 'from-dmaroon', 'to-maroon');
+                button.style.backgroundColor = 'gray';
+                button.style.cursor = 'not-allowed'; // Optional: show disabled cursor
+            } else {
+                // Restore original color and hover effect
+                button.classList.add('hover:bg-gradient-to-r', 'from-dmaroon', 'to-maroon');
+                button.style.backgroundColor = ''; // Use default Tailwind CSS styles
+                button.style.cursor = ''; // Restore default cursor
+            }
+        }
+
+
+if('{{disabled}}' == 'disabled' || '{{election.is_close}}'){
+ var countDownDate = new Date("{{ election.close_date|date:'M d, Y H:i:s' }}").getTime();
+ //alert(countDownDate)
+// Update the count down every 1 second
+var x = setInterval(function() {
+
+  // Get today's date and time
+  var now = new Date().getTime();
+
+  // Find the distance between now and the count down date
+  var distance = countDownDate - now;
+
+  // Time calculations for days, hours, minutes and seconds
+  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+  // Display the result in the element with id="demo"
+  document.getElementById("demo").innerHTML = days + "d " + hours + "h "
+  + minutes + "m " + seconds + "s ";
+
+  // If the count down is finished, write some text
+  if (distance < 0) {
+    clearInterval(x);
+    document.getElementById("demo").innerHTML='Results are out'
+    toggleCheckResultBtn();
+  }
+}, 1000);
+}
+
+           
+function toggleCheckResultBtn(){
+    var button = document.getElementById("checkResultsBtn");
+
+    // If button is disabled, enable it and update the classes
+    if (button.disabled) {
+        button.disabled = false; // Enable button
+        button.classList.remove("bg-disablecolor", "cursor-not-allowed"); // Remove disabled styles
+        button.classList.add("bg-maroon", "hover:bg-gradient-to-r", "from-dmaroon", "to-maroon"); // Add enabled styles
+    } else {
+        button.disabled = true; // Disable button
+        button.classList.remove("bg-maroon", "hover:bg-gradient-to-r", "from-dmaroon", "to-maroon"); // Remove enabled styles
+        button.classList.add("bg-disablecolor", "cursor-not-allowed"); // Add disabled styles
+    }
+};
+        
+
+    </script>
+
+
+
+    
+    {% endblock %}

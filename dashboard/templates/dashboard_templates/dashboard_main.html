@@ -1,0 +1,45 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Dashboard-Main{% endblock %}
+
+{% block body %}
+<!-- {/* GREETINGS */} -->
+<div class='mb-4 text-dmaroon'>
+    <h1 class='text-4xl font-medium'>Hello, <span class='font-bold'>Wang Pok</span></h1>
+    <p class='text-xl'>Welcome to <span>ElectEd's Online Voting System</span></p>
+</div>
+
+<!-- {/* CONTAINER FOR ALL CARDS */} -->
+<div class='flex flex-col w-full gap-6'>
+    <!-- {/* CARD 1 and 2 */} -->
+    <div class='container flex flex-col w-full gap-6 md:flex-row'>
+        <!-- {/* CARD1 */} -->
+        <div class='flex w-full border-2 shadow-md rounded-3xl border-itom/25 text-maroon'>
+            <div class='flex flex-col py-5 px-7'>
+                <h3 class='mb-4 text-xl font-semibold text-dmaroon'>On going Election</h3>
+                <div class='w-full pl-4'>
+                    <h1 class='text-5xl font-semibold'><span class='text-6xl font-bold'>S</span>upreme <span class='text-6xl font-bold'>S</span>tudent <span class='text-6xl font-bold'>G</span>overnment</h1>
+                    <!-- {/* SUD UG DIV ANG BUTTON PARA TUNGA */} -->
+                    <div class='flex items-center justify-center w-full'>
+                        <button 
+                            class='px-6 py-2 mt-4 font-semibold border rounded-full text-maroon border-maroon hover:bg-maroon hover:text-white2'
+                        >
+                            Vote Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- {/* IMAGE CONTAINER */} -->
+            <div class='flex items-center justify-center h-full p-3'>
+                <img src="{% static 'dashboard/ongoingelections.png' %}"/>
+            </div>
+        </div>
+
+        <!-- {/* CARD 2 */} -->
+        
+    </div>
+  
+
+</div>
+{% endblock %}

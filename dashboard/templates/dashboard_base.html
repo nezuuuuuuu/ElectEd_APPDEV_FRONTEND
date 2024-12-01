@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static tailwind_tags %}
+    {% tailwind_css %}
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <nav class='fixed top-0 left-0 z-10 flex items-center justify-between w-full px-6 py-2 shadow-md bg-white2 text-maroon'>
+
+            <!-- {/* LEFT */} -->
+            <div class='flex items-center gap-6'>
+                <button id="toggleSidebarButton" class="p-3 rounded-full hover:bg-itom/35">
+                    <img src="{% static 'icons/menufries.svg' %}" class="h-auto w-7" alt="">
+                </button>
+                
+                <a href="/dashboard">
+                    <img src="{% static 'landingpics/logoonly.svg' %}"
+                        class="w-12 h-auto"
+                    />
+                </a>
+            </div>
+    
+            
+            <!-- {/* MID */} -->
+            {% block content %}
+            
+            {% endblock %}
+    
+    
+            <!-- {/* RIGHT */} -->
+            <div class='flex items-center justify-start gap-3 pr-8'>
+                <div class='justify-center w-12 h-12 overflow-hidden border-4 rounded-full border-maroon'>
+                    <img src="{% static 'initials/' %}{{ initials }}.jpg" class="items-center pb-4"/>
+                </div>
+                <h2 class=' text-xl font-medium md:block'>{{ lastname }}</h2>
+            </div>
+        </nav> 
+  
+        <!-- {/* Sidebar component */} -->    
+        <aside id="sidebar"
+            class="
+                w-52
+                lg:scale-100
+                fixed top-16 left-0 h-[93%] bg-red-100 
+                rounded-br-xl shadow-md 
+                duration-300 ease-in-out transition-all
+            "
+        >
+            <!-- Sidebar Container -->
+            <div class="flex-col h-full justify-evenly">
+                <ul class="flex flex-col justify-center pt-12">
+                    <!-- Dashboard Link -->
+                    <a href="{% url 'main' %}"
+                        class="
+                            {% if request.path == '/dashboard/' %} bg-gradient-to-r from-dmaroon to-maroon text-white2 {% endif %}
+                            text-maroon flex items-center hover:bg-gradient-to-r from-dmaroon to-maroon hover:text-white2 
+                            gap-x-4 p-2
+                        "
+                    >
+                        <div class="py-3 pl-5 text-2xl">
+                             <img src="{% static 'icons/home.svg' %}" alt="">
+                        </div>
+                        <span class="ml-3 spans">Dashboard</span>
+                    </a>
+
+                    <!-- Vote Link -->
+                    <a href="{% url 'votes' %}"
+                        class="
+                            {% if request.path == '/dashboard/votes/' %} bg-gradient-to-r from-dmaroon to-maroon text-white2 {% endif %}
+                            text-maroon flex items-center hover:bg-gradient-to-r from-dmaroon to-maroon hover:text-white2 
+                            gap-x-4 p-2
+                        "
+                    >
+                        <div class="py-3 pl-5 text-2xl">
+                            <img src="{% static 'icons/vote_icon.svg' %}" alt="">
+                        </div>
+                        <span class="ml-3 spans">Vote</span>
+                    </a>
+
+                    <!-- Guidelines Link -->
+                    <a href="{% url 'guidelines' %}"
+                        class="
+                            {% if request.path == '/dashboard/guidelines/' %} bg-gradient-to-r from-dmaroon to-maroon text-white2 {% endif %}
+                            text-maroon flex items-center hover:bg-gradient-to-r from-dmaroon to-maroon hover:text-white2 
+                            gap-x-4 p-2
+                        "
+                    >
+                        <div class="py-3 pl-5 text-2xl">
+                            <img src="{% static 'icons/guidelines_icon.svg' %}" alt="">
+                        </div>
+                        <span class="ml-3 spans">Guidelines</span>
+                    </a>
+
+                    <!-- Logout Link -->
+                    <a href="{% url 'logout' %}"
+                        class="absolute bottom-0 flex items-center w-full p-2 text-center text-maroon hover:bg-gradient-to-r from-dmaroon to-maroon hover:text-white2 gap-x-4 hover:rounded-br-xl"
+                    >
+                        <div class="py-3 pl-5 text-2xl">
+                            <img src="{% static 'icons/logout_icon.svg' %}" alt="">
+                        </div>
+                        <span class="ml-3 spans">Logout</span>
+                    </a>
+                </ul>
+            </div>
+        </aside>
+
+    </header>
+    
+    <main class="mt-28 lg:absolute md:left-28 lg:left-48 xl:left-72">
+        {% block body %}
+
+        {% endblock %}
+    </main>
+
+    <script>
+        let isSidebarExpanded = true;
+
+        const toggleSidebarButton = document.getElementById('toggleSidebarButton');
+        const sidebar = document.getElementById('sidebar');
+        const spanElements = document.querySelectorAll('.spans');
+
+        toggleSidebarButton.addEventListener('click', () => {
+            isSidebarExpanded = !isSidebarExpanded;
+
+            if(isSidebarExpanded) {
+                sidebar.classList.add('w-52');
+                sidebar.classList.remove('w-20');
+
+                // remov hidden if expanded sha
+                spanElements.forEach(span => {
+                    span.classList.remove('hidden');
+                });
+            } else {
+                sidebar.classList.add('w-20');
+                sidebar.classList.remove('w-52');
+
+                // hide if not expanded
+                spanElements.forEach(span => {
+                    span.classList.add('hidden');
+                });
+            }
+        })
+    </script>
+</body>
+</html>
