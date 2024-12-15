@@ -66,7 +66,6 @@
                 no candidates for {{position.title}}
                 {%endif%}
                 {% for candidate in candidates %}
-                {{election.id }}
                     {% if candidate.positionId == position.id and candidate.electionId == election.id %}
 
                         <div onclick="openModal(
@@ -84,8 +83,8 @@
                                         scale-105
                                     {% endif %}">
                             <div class="w-40 h-40 mb-2 overflow-hidden border-4 rounded-full border-maroon py10">
-                                {% if candidate.image %}
-                                    <img src="{{ candidate.image.url }}" class="object-cover w-full h-full rounded-full" alt="{{ candidate.name }}">
+                                {% if candidate.imagePath %}
+                                    <img src="{% static 'landingpics/'|add:candidate.imagePath %}" class="object-cover w-full h-full rounded-full" alt="{{ candidate.name }}">
                                 {% else %}
                                     <img src="{% static 'landingpics/default.png' %}" class="object-cover h-full rounded-full" alt="No Image">
                                 {% endif %}
@@ -360,7 +359,8 @@
                     const candidate = selectedCandidates[position];
                     votes.push({
                         position: position,
-                        candidate_id: candidate.candidate_id
+                        candidate_id: candidate.candidate_id,
+                        election_id:'{{election.id}}'
                     });
                 }
             }
@@ -430,14 +430,14 @@ if('{{disabled}}' == 'disabled' || '{{election.is_close}}'){
  var countDownDate = new Date("{{ election.close_date|date:'M d, Y H:i:s' }}").getTime();
  //alert(countDownDate)
 // Update the count down every 1 second
-var x = setInterval(function() {
-
+    var x = setInterval(function() {
+  
   // Get today's date and time
   var now = new Date().getTime();
-
+  
   // Find the distance between now and the count down date
   var distance = countDownDate - now;
-
+ 
   // Time calculations for days, hours, minutes and seconds
   var days = Math.floor(distance / (1000 * 60 * 60 * 24));
   var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));

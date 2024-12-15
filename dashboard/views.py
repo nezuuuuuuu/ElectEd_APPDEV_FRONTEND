@@ -64,6 +64,7 @@ def votes(request):
     current_time = datetime.now(timezone.utc)  # Ensure current_time is offset-aware
     # current_time=current_time + timedelta(hours=8) 
     is_future_ctr=0
+    
     api_url = "http://localhost:5196/api/elections"
     try:
         # Send a GET request to the API
@@ -119,7 +120,7 @@ def votes_candidates(request, election_id):
     voted_candidate_ids=''  
  
 # Get the search query from the request
-  
+    print('asdadasdjangjdfngajgnaognsdao')
 
     # Filter candidates based on the current election and search query
     try:
@@ -128,14 +129,28 @@ def votes_candidates(request, election_id):
         response.raise_for_status()  # Raise an error for bad status codes
         data = response.json()  # Parse JSON data
         candidates = data
-
+        disabled=''
         # print(f'{candidates} candasfasdfwrhbijwrnbiuwrnbojf')
         response=None
         response = requests.get(election_by_id)
         response.raise_for_status()  # Raise an error for bad status codes
         data = response.json()  # Parse JSON data
         election = data
-       
+
+        import pytz
+        # Ensure current_time is offset-aware
+        current_time = datetime.now(timezone.utc)
+
+        # Parse closeDate from the election data
+        closeDate_time = datetime.strptime(election['closeDate'], "%Y-%m-%dT%H:%M:%S")
+
+        # Localize closeDate_time to UTC (making it aware)
+        closeDate_time_utc = pytz.utc.localize(closeDate_time)
+        print(f'{current_time}   {closeDate_time_utc}')
+        # Now compare
+        if current_time > closeDate_time_utc:
+            isDisabled = 'disabled'
+        print(disabled)
         
         response=None
         response = requests.get(position_by_election)
@@ -151,27 +166,15 @@ def votes_candidates(request, election_id):
     
 
 
-        # Pass the filtered candidates, positions, and election to the template
-        isDisabled= ''
-        vote_slip=None
-        voted_candidates= None
-    
-        student=getStudentLoggedIn(request=request)
-        try:
-            vote_slip = get_voteSlip_by_election_student(student.id,election.id)
-            voted_candidate_ids=str(vote_slip.candidates).replace('\'','').replace('\"','').replace('[','').replace(']','').replace(' ','')
-
-            voted_candidate_ids = voted_candidate_ids.split(',') 
-            
-            # print(f'{voted_candidate_ids} idsssss')
-            isDisabled= 'disabled'
-                
-        except Exception as e:
-            vote_slip = ''
-            isDisabled= ''  
-            voted_candidate_ids=''  
-   
-       
+        open_date = datetime.fromisoformat(election['openDate'].replace('Z', '+00:00'))
+        close_date = datetime.fromisoformat(election['closeDate'].replace('Z', '+00:00'))
+        if open_date.tzinfo is None:
+            open_date = open_date.replace(tzinfo=timezone.utc)
+        if close_date.tzinfo is None:
+            close_date = close_date.replace(tzinfo=timezone.utc)
+        election['open_date']=open_date
+        election['close_date']=close_date
+  
         
     except requests.exceptions.RequestException as e:
         # Handle API errors
@@ -183,6 +186,7 @@ def votes_candidates(request, election_id):
             'disabled' : isDisabled,
             'voted_ids': voted_candidate_ids  
         }
+    
     return render(request, 'dashboard_templates/dashboard_votes_candidates.html',  context|get_user_info(request))
    
 
@@ -204,7 +208,7 @@ def logout(request):
 @require_POST
 def submit_votes(request):
 
-  
+    election_id=''
     try:
         # Parse the JSON data from the request body
         data = json.loads(request.body)
@@ -213,16 +217,18 @@ def submit_votes(request):
         votes = data.get('votes', [])
         ids=[]
         i=0
-
+        # election_id=None
        
-        election=None
+      
 
         if not votes:
             # If no votes are provided, return an error response
             return JsonResponse({'success': False, 'error': 'No votes provided'})
-
+        # election_id=votes.get('election_id')
+        # print(election_id)
         for vote in votes:
-            n=vote.get('candidate_id')
+            n=vote.get('candidate.id')
+        
             candidate_id_list=vote.get('candidate_id')
             position_list=vote.get('position')
             n = len(candidate_id_list)  
@@ -250,7 +256,7 @@ def submit_votes(request):
                     data['voteCount'] += 1  
                     print(data)
 
-                    
+
                     update_response = requests.put(candidate_url, json=data)
                     print("PUT request made. Status code:", update_response.status_code)
                    
@@ -269,8 +275,7 @@ def submit_votes(request):
                 voteslip_data = {
                     "StudentId":student.id,  
                     "ElectionId": election_id,  
-                    "CandidateIds": candidate_id_list,  
-                   
+                    "CandidateIds": candidate_id_list,     
                 }
 
                 # Step 1: Send the POST request to create a voteslip

@@ -75,7 +75,7 @@
     
                                     <!-- Color Overlay covering the entire card -->
                                     <div class="absolute inset-0 z-10 bg-gray-800 bg-opacity-70"></div>
-                                    
+                                   
                                     <!-- Election Image -->
                                     {% if election.imagePath %}
                                     <div class="relative w-full h-40 overflow-hidden">
@@ -158,8 +158,6 @@
                 {
                     id: "{{ forloop.counter }}",
                     closeDate: new Date("{{ election.open_date|date:'M d, Y H:i:s' }}")
-                    
-
                 },
                 {% endfor %}
             ];
