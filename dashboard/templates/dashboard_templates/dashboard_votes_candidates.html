@@ -73,7 +73,7 @@
                             '{{ candidate.year }}', 
                             '{{ candidate.course }}', 
                             '{{ position.title }}', 
-                            '{% if candidate.image %}{{ candidate.image.url }}{% else %}{% static 'landingpics/guwang.png' %}{% endif %}', 
+                            '{% if candidate.imagePath %}{% static 'landingpics/'|add:candidate.imagePath %}{% else %}{% static 'landingpics/guwang.png' %}{% endif %}', 
                             '{{ candidate.platforms|escapejs }}',
                             '{{candidate.partylist}}'
                             )"
@@ -116,7 +116,7 @@
                                     '{{ candidate.year }}', 
                                     '{{ candidate.course }}', 
                                     '{{ position.title }}', 
-                                    '{% if candidate.image %}{{ candidate.image.url }}{% else %}{% static 'landingpics/guwang.png' %}{% endif %}', 
+                                    '{% if candidate.imagePath %}{% static 'landingpics/'|add:candidate.imagePath %}{% else %}{% static 'landingpics/guwang.png' %}{% endif %}', 
                                     '{{ candidate.platforms|escapejs }}'); 
                                     "class="w-32 px-4 py-2 mb-2 font-medium transition-transform border-2 rounded-full hover:bg-maroon hover:text-white2 border-maroon text-maroon">
                                     View&nbsp;Details
