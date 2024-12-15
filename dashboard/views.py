@@ -67,7 +67,7 @@ def votes(request):
     
     api_url = "http://localhost:5196/api/elections"
     try:
-        # Send a GET request to the API
+    
         response = requests.get(api_url)
         response.raise_for_status()  # Raise an error for bad status codes
         data = response.json()  # Parse JSON data
@@ -82,23 +82,18 @@ def votes(request):
                 close_date = close_date.replace(tzinfo=timezone.utc)
             election['open_date']=open_date
             election['close_date']=close_date
-            # print(open_date)
-            # print(close_date)
-            # print(current_time)
-            # Compare dates
+          
             election['is_future'] = open_date > current_time
             election['is_close'] = close_date < current_time
             election['is_present'] = open_date <= current_time <= close_date
 
-            # print(f'{election["is_close"]} closed')  # Debugging output
-            # print(election)
+          
 
             if(election['is_future']):
                 is_future_ctr+=1
                 
     except requests.exceptions.RequestException as e:
-        # Handle API errors
-        # print(f"Error fetching data from API: {e}")
+   
         total_users = pending_orders = completed_orders = active_vendors = inactive_vendors = 0
 
 
@@ -106,7 +101,7 @@ def votes(request):
         'elections': elections,
         'is_future_ctr': is_future_ctr
     }
-    # context.update(user_info)
+   
     return render(request, 'dashboard_templates/dashboard_votes.html', context | get_user_info(request=request))
 
 def votes_candidates(request, election_id):
@@ -114,7 +109,7 @@ def votes_candidates(request, election_id):
     election_by_id = f"http://localhost:5196/api/Elections/{election_id}"
     position_by_election = f"http://localhost:5196/api/Positions/election/{election_id}"
     position_by_election = f"http://localhost:5196/api/Positions/election/{election_id}"
-
+    
     vote_slip = ''
     isDisabled= ''  
     voted_candidate_ids=''  
@@ -122,33 +117,35 @@ def votes_candidates(request, election_id):
 
     # Filter candidates based on the current election and search query
     try:
-        # Send a GET request to the API
+      
         response = requests.get(candidate_by_election)
-        response.raise_for_status()  # Raise an error for bad status codes
-        data = response.json()  # Parse JSON data
+        response.raise_for_status()  
+        data = response.json() 
         candidates = data
         disabled=''
-        # print(f'{candidates} candasfasdfwrhbijwrnbiuwrnbojf')
+      
         response=None
         response = requests.get(election_by_id)
-        response.raise_for_status()  # Raise an error for bad status codes
-        data = response.json()  # Parse JSON data
+        response.raise_for_status()  
+        data = response.json() 
         election = data
 
         import pytz
-        # Ensure current_time is offset-aware
+       
         current_time = datetime.now(timezone.utc)
 
-        # Parse closeDate from the election data
+       
         closeDate_time = datetime.strptime(election['closeDate'], "%Y-%m-%dT%H:%M:%S")
 
         # Localize closeDate_time to UTC (making it aware)
         closeDate_time_utc = pytz.utc.localize(closeDate_time)
         print(f'{current_time}   {closeDate_time_utc}')
-        # Now compare
+      
         if current_time > closeDate_time_utc:
             isDisabled = 'disabled'
         print(disabled)
+
+      
         
         response=None
         response = requests.get(position_by_election)
@@ -170,13 +167,36 @@ def votes_candidates(request, election_id):
             close_date = close_date.replace(tzinfo=timezone.utc)
         election['open_date']=open_date
         election['close_date']=close_date
-        
+
   
         
     except requests.exceptions.RequestException as e:
         # Handle API errors
         print(f"Error fetching data from API: {e}")
+    global Logged_id
+    get_user_info(request=request)
+    voteslip_by_student_election_id = f'http://localhost:5196/api/VoteSlips/student/{Logged_id}/election/{election_id}'
+    response = requests.get(voteslip_by_student_election_id)
+    
+
+    try:
+        response.raise_for_status()
+        data = response.json()  
         
+        data = data  
+        voted_candidate_ids=data[0]['candidateIds']
+        print(data[0]['candidateIds'])
+     
+        if data:  
+            isDisabled = 'disabled'
+        else:
+            isDisabled = ''  
+
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+       
+    
+
     context = {
             'election': election,
             'positions': positions,
@@ -251,6 +271,7 @@ def submit_votes(request):
                     update_response = requests.put(candidate_url, json=candidate_data)
                    
                     update_response.raise_for_status()
+                    print('succesfully incremented')
                    
                  
                 except requests.RequestException:
@@ -258,13 +279,16 @@ def submit_votes(request):
 
         # Create a voteslip
         create_voteslip_url = "http://localhost:5196/api/Voteslips"
-        student = getStudentLoggedIn()
+        student = getStudentLoggedIn(request=request)
+        
         voteslip_data = {
-            "StudentId": student.id,
-            "ElectionId": election_id,
-            "CandidateIds": [vote['candidate_id'] for vote in votes]
+        "studentId": student['studentId'],
+        "electionId": election_id,
+        "candidateIds": ",".join(str(vote['candidate_id']) for vote in votes)
         }
+
         voteslip_response = requests.post(create_voteslip_url, json=voteslip_data)
+        
         if voteslip_response.status_code == 201:
             return JsonResponse({'success': True})
         else:
@@ -308,15 +332,15 @@ def getStudentLoggedIn(request):
    
     global Logged_id
     get_user_info(request=request)
-    # print(Logged_id)
     student_by_id = f"http://localhost:5196/api/Students/{Logged_id}"
-
+   
     response = requests.get(student_by_id)
     response.raise_for_status()  # Raise an error for bad status codes
     data = response.json()  # Parse JSON data
-    student = data.get("result", [])
+    print(data)
+
   
-    return student
+    return data
 
 def update_results(election):
     # Get all positions for the election
@@ -382,14 +406,14 @@ def results_page(request, election_id):
 def get_voteSlip_by_election_student( election_id, student_id):
     voteslip_url = f"http://localhost:5196/api/VoteSlips/student/{student_id}/election/{election_id}"
     try:
-        # Send a GET request to the API
+      
         response = requests.get(voteslip_url)
         response.raise_for_status()  # Raise an error for bad status codes
         data = response.json()  # Parse JSON data
         voteslips = data.get("result", [])
         return voteslips
     except requests.exceptions.RequestException as e:
-        # Handle API errors
+      
         print(f"Error fetching data from API: {e}")
         
     
