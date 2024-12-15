@@ -70,11 +70,8 @@ def votes(request):
         response = requests.get(api_url)
         response.raise_for_status()  # Raise an error for bad status codes
         data = response.json()  # Parse JSON data
-        print(f"{data}asdasd")
-        elections = data.get('result', [])
-
+        elections = data.get("result", [])
         for election in elections:
-        
             # Ensure the required keys exist and process dates
             open_date = datetime.fromisoformat(election['openDate'].replace('Z', '+00:00'))
             close_date = datetime.fromisoformat(election['closeDate'].replace('Z', '+00:00'))
@@ -82,7 +79,8 @@ def votes(request):
                 open_date = open_date.replace(tzinfo=timezone.utc)
             if close_date.tzinfo is None:
                 close_date = close_date.replace(tzinfo=timezone.utc)
-            
+            election['open_date']=open_date
+            election['close_date']=close_date
             # print(open_date)
             # print(close_date)
             # print(current_time)
@@ -91,95 +89,102 @@ def votes(request):
             election['is_close'] = close_date < current_time
             election['is_present'] = open_date <= current_time <= close_date
 
-            print(f'{election["is_close"]} closed')  # Debugging output
-            
+            # print(f'{election["is_close"]} closed')  # Debugging output
+            # print(election)
 
-        
+            if(election['is_future']):
+                is_future_ctr+=1
+                
     except requests.exceptions.RequestException as e:
         # Handle API errors
-        print(f"Error fetching data from API: {e}")
+        # print(f"Error fetching data from API: {e}")
         total_users = pending_orders = completed_orders = active_vendors = inactive_vendors = 0
 
 
     context = {
-        'elections': elections
-        
+        'elections': elections,
+        'is_future_ctr': is_future_ctr
     }
     # context.update(user_info)
     return render(request, 'dashboard_templates/dashboard_votes.html', context | get_user_info(request=request))
 
 def votes_candidates(request, election_id):
-    
-    # election = get_object_or_404(Election, id=election_id)
-    # positions = Position.objects.filter(election=election)
-    # # candidates = Candidate.objects.filter(election=election).select_related('position')
+    candidate_by_election = f"http://localhost:5196/api/Candidates/election/{election_id}"
+    election_by_id = f"http://localhost:5196/api/Elections/{election_id}"
+    position_by_election = f"http://localhost:5196/api/Positions/election/{election_id}"
+    position_by_election = f"http://localhost:5196/api/Positions/election/{election_id}"
 
+    vote_slip = ''
+    isDisabled= ''  
+    voted_candidate_ids=''  
+ 
 # Get the search query from the request
-    # search_query = request.GET.get('q', '').strip()
-    # current_time =now()
-    # election.is_close = election.close_date < current_time
-    
-    
+  
 
     # Filter candidates based on the current election and search query
-    # if search_query:
-    #     candidates = Candidate.objects.filter(
-            
+    try:
+        # Send a GET request to the API
+        response = requests.get(candidate_by_election)
+        response.raise_for_status()  # Raise an error for bad status codes
+        data = response.json()  # Parse JSON data
+        candidates = data
 
-    #          Q(name__icontains=search_query) | 
-    #         Q( year__icontains=search_query)|
-    #         Q( course__icontains=search_query)| 
-    #         Q( partylist__icontains=search_query),
-    #         election=election
-          
-            
-           
-            
-    #     )
-    # else:
-    #     candidates = Candidate.objects.filter(election=election)
+        # print(f'{candidates} candasfasdfwrhbijwrnbiuwrnbojf')
+        response=None
+        response = requests.get(election_by_id)
+        response.raise_for_status()  # Raise an error for bad status codes
+        data = response.json()  # Parse JSON data
+        election = data
+       
+        
+        response=None
+        response = requests.get(position_by_election)
+        response.raise_for_status()  # Raise an error for bad status codes
+        data = response.json()  # Parse JSON data
+        positions = data
 
-    # for position in positions:
-    #     position.has_candidates=False
-    #     for canidate in candidates:
-    #         if canidate.position==position :
-    #             position.has_candidates=True
+        for position in positions:
+            position['has_candidates']=False
+            for canidate in candidates:
+                if canidate['positionId'] == position['id'] :
+                    position['has_candidates']=True
     
 
 
-    # # Pass the filtered candidates, positions, and election to the template
-    # isDisabled= ''
-    # vote_slip=None
-    # voted_candidates= None
-   
-    # student=getStudentLoggedIn(request=request)
-    # try:
-    #     vote_slip = VoteSlip.objects.get(student=student, election=election)
-    #     voted_candidate_ids=str(vote_slip.candidates).replace('\'','').replace('\"','').replace('[','').replace(']','').replace(' ','')
+        # Pass the filtered candidates, positions, and election to the template
+        isDisabled= ''
+        vote_slip=None
+        voted_candidates= None
+    
+        student=getStudentLoggedIn(request=request)
+        try:
+            vote_slip = get_voteSlip_by_election_student(student.id,election.id)
+            voted_candidate_ids=str(vote_slip.candidates).replace('\'','').replace('\"','').replace('[','').replace(']','').replace(' ','')
 
-    #     voted_candidate_ids = voted_candidate_ids.split(',') 
-        
-    #     # print(f'{voted_candidate_ids} idsssss')
-    #     isDisabled= 'disabled'
+            voted_candidate_ids = voted_candidate_ids.split(',') 
             
-    # except Exception as e:
-    #     vote_slip = ''
-    #     isDisabled= ''  
-    #     voted_candidate_ids=''  
+            # print(f'{voted_candidate_ids} idsssss')
+            isDisabled= 'disabled'
+                
+        except Exception as e:
+            vote_slip = ''
+            isDisabled= ''  
+            voted_candidate_ids=''  
+   
+       
         
-
-    # context = {
-    #     'election': election,
-    #     'positions': positions,
-    #     'candidates': candidates,
-    #     'disabled' : isDisabled,
-    #     'voted_ids': voted_candidate_ids
-        
-
-    # }
-
-    return render(request, 'dashboard_templates/dashboard_votes_candidates.html',  get_user_info(request))
-
+    except requests.exceptions.RequestException as e:
+        # Handle API errors
+        print(f"Error fetching data from API: {e}")
+    context = {
+            'election': election,
+            'positions': positions,
+            'candidates': candidates,
+            'disabled' : isDisabled,
+            'voted_ids': voted_candidate_ids  
+        }
+    return render(request, 'dashboard_templates/dashboard_votes_candidates.html',  context|get_user_info(request))
+   
 
 def get_positions(request, election_id):
     # positions = Position.objects.filter(election_id=election_id)
@@ -198,6 +203,8 @@ def logout(request):
 @csrf_exempt
 @require_POST
 def submit_votes(request):
+
+  
     try:
         # Parse the JSON data from the request body
         data = json.loads(request.body)
@@ -206,7 +213,8 @@ def submit_votes(request):
         votes = data.get('votes', [])
         ids=[]
         i=0
-      
+
+       
         election=None
 
         if not votes:
@@ -218,45 +226,62 @@ def submit_votes(request):
             candidate_id_list=vote.get('candidate_id')
             position_list=vote.get('position')
             n = len(candidate_id_list)  
-            
-            api_url = "http://localhost:5196/api"
-            
-            # Send a GET request to the API
-            
-            for i in range(n):
 
+            for i in range(n):
                 candidate_id =candidate_id_list[i]
                 position = position_list[i]
-
-                # Check if candidate_id and position are present in each vote
+             
                 if not candidate_id:
                     return JsonResponse({'success': False, 'error': 'Candidate ID missing in vote'})
                 if not position:
                     return JsonResponse({'success': False, 'error': 'Position missing in vote'})
-
+                
                 # Attempt to fetch the candidate from the database
                 try:
 
-                    response = requests.get(f'{api_url}/candidates/{candidate_id}')
+         
+                    candidate_url = f"http://localhost:5196/api/Candidates/{candidate_id}"
+                    response = requests.get(candidate_url)
+                    
                     response.raise_for_status()  # Raise an error for bad status codes
+                    
                     data = response.json()  # Parse JSON d
+                   
+                    data['voteCount'] += 1  
+                    print(data)
+
+                    
+                    update_response = requests.put(candidate_url, json=data)
+                    print("PUT request made. Status code:", update_response.status_code)
+                   
+                    update_response.raise_for_status()  
+                     
+                    print("Vote count updated successfully")
 
                 except :
                     return JsonResponse({'success': False, 'error': f'Candidate with ID {candidate_id} not found'})
               
-                i+=1
-                if(election==None):
-                    election=data.election
-                # Increment the vote count for the selected candidate
-                candidate.vote_count += 1
-                candidate.save()
-       
-        # print(candidate.election)
+              
+                create_voteslip_url = "http://localhost:5196/api/Voteslips"  # Replace with your actual URL
 
+                student = getStudentLoggedIn()
 
-        student = getStudentLoggedIn(request=request) 
-        voteslip = VoteSlip(student=student, election=election,candidates=ids)
-           
+                voteslip_data = {
+                    "StudentId":student.id,  
+                    "ElectionId": election_id,  
+                    "CandidateIds": candidate_id_list,  
+                   
+                }
+
+                # Step 1: Send the POST request to create a voteslip
+                response = requests.post(create_voteslip_url, json=voteslip_data)
+
+                # Step 2: Check if the request was successful
+                if response.status_code == 201:  # 201 means resource created successfully
+                    print("Voteslip created successfully.")
+                else:
+                    print('failed')
+                
            
              
             # voteslip.full_clean()  # Optional: Validate before saving
@@ -306,11 +331,17 @@ def create_profile_image(initials, output_path, size=256, text_color="white"):
 
 
 def getStudentLoggedIn(request):
+   
     global Logged_id
     get_user_info(request=request)
     # print(Logged_id)
-   
-    student = Student.objects.get(student_id=Logged_id)  
+    student_by_id = f"http://localhost:5196/api/Students/{Logged_id}"
+
+    response = requests.get(student_by_id)
+    response.raise_for_status()  # Raise an error for bad status codes
+    data = response.json()  # Parse JSON data
+    student = data.get("result", [])
+  
     return student
 
 def update_results(election):
@@ -346,6 +377,7 @@ def update_results(election):
             candidate.save()
 
 def results_page(request, election_id):
+
     # election = get_object_or_404(Election, id=election_id)
     # print('11111')
     # update_results(election)
@@ -370,3 +402,21 @@ def results_page(request, election_id):
     #     'candidates': candidates,
     # }
     return render(request, 'dashboard_templates/dashboard_check_results.html',   get_user_info(request))
+
+
+
+def get_voteSlip_by_election_student( election_id, student_id):
+    voteslip_url = f"http://localhost:5196/api/VoteSlips/student/{student_id}/election/{election_id}"
+    try:
+        # Send a GET request to the API
+        response = requests.get(voteslip_url)
+        response.raise_for_status()  # Raise an error for bad status codes
+        data = response.json()  # Parse JSON data
+        voteslips = data.get("result", [])
+        return voteslips
+    except requests.exceptions.RequestException as e:
+        # Handle API errors
+        print(f"Error fetching data from API: {e}")
+        
+    
+

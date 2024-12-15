@@ -66,8 +66,8 @@
                 no candidates for {{position.title}}
                 {%endif%}
                 {% for candidate in candidates %}
-                   
-                    {% if candidate.position == position and candidate.election == election %}
+                {{election.id }}
+                    {% if candidate.positionId == position.id and candidate.electionId == election.id %}
 
                         <div onclick="openModal(
                             '{{ candidate.name }}', 
@@ -102,7 +102,7 @@
 
                                     {% else %}
                                     <button 
-                                    onclick="selectCandidate('{{position.title }}','{{position.max_selection}}', '{{ candidate.name }}','{{candidate.id}}', this);event.stopPropagation()" 
+                                    onclick="selectCandidate('{{position.title }}','{{position.maxSelection}}', '{{ candidate.name }}','{{candidate.id}}', this);event.stopPropagation()" 
                              class="vote-button hover:bg-maroon2 active:bg-dmaroon focus:bg-dmaroon px-12 py-2 mb-2 font-medium rounded-full bg-maroon text-white2 w-36">
 
                              Vote
@@ -209,6 +209,8 @@
         const selectedCandidates = {}; // Track selected candidates by position
             
         function selectCandidate(position,max_selection, candidateName,candidate_id, button) {
+
+           
             // Get the parent container (the div holding the candidate's details)
             const container = button.closest('.border-maroon');
            
@@ -257,6 +259,7 @@
                     selectedCandidates[position].container.push(container);
                     selectedCandidates[position].candidate_id.push(candidate_id);
                     selectedCandidates[position].count++; 
+                  
                 }else {
                     return;
                 }    
@@ -269,7 +272,9 @@
                 container: [container],
                 candidate_id: [candidate_id],
                 count: 1
+               
                 };
+                
               
             } else{
                 return;
@@ -376,6 +381,7 @@
                 body: JSON.stringify({
                     votes: votes
                 })
+                
             })
             .then(response => response.json())  // Parse the JSON response from the server
             .then(data => {
