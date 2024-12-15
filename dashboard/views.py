@@ -73,7 +73,8 @@ def votes(request):
         response = requests.get(api_url)
         response.raise_for_status()  # Raise an error for bad status codes
         data = response.json()  # Parse JSON data
-        for election in data:
+        elections = data.get("result", [])
+        for election in elections:
             # Ensure the required keys exist and process dates
             open_date = datetime.fromisoformat(election['openDate'].replace('Z', '+00:00'))
             close_date = datetime.fromisoformat(election['closeDate'].replace('Z', '+00:00'))
@@ -91,6 +92,12 @@ def votes(request):
             election['is_present'] = open_date <= current_time <= close_date
 
             print(f'{election["is_close"]} closed')  # Debugging output
+            print(election)
+
+            if(election['is_future']):
+                is_future_ctr+=1
+                
+
             
 
         
@@ -101,81 +108,81 @@ def votes(request):
 
 
     context = {
-        'elections': data
-        
+        'elections': elections,
+        'is_future_ctr': is_future_ctr
     }
     # context.update(user_info)
     return render(request, 'dashboard_templates/dashboard_votes.html', context | get_user_info(request=request))
 
 def votes_candidates(request, election_id):
     
-    # election = get_object_or_404(Election, id=election_id)
-    # positions = Position.objects.filter(election=election)
-    # # candidates = Candidate.objects.filter(election=election).select_related('position')
+    election = get_object_or_404(Election, id=election_id)
+    positions = Position.objects.filter(election=election)
+    candidates = Candidate.objects.filter(election=election).select_related('position')
 
 # Get the search query from the request
-    # search_query = request.GET.get('q', '').strip()
-    # current_time =now()
-    # election.is_close = election.close_date < current_time
+    search_query = request.GET.get('q', '').strip()
+    current_time =now()
+    election.is_close = election.close_date < current_time
     
     
 
     # Filter candidates based on the current election and search query
-    # if search_query:
-    #     candidates = Candidate.objects.filter(
+    if search_query:
+        candidates = Candidate.objects.filter(
             
 
-    #          Q(name__icontains=search_query) | 
-    #         Q( year__icontains=search_query)|
-    #         Q( course__icontains=search_query)| 
-    #         Q( partylist__icontains=search_query),
-    #         election=election
+             Q(name__icontains=search_query) | 
+            Q( year__icontains=search_query)|
+            Q( course__icontains=search_query)| 
+            Q( partylist__icontains=search_query),
+            election=election
           
             
            
             
-    #     )
-    # else:
-    #     candidates = Candidate.objects.filter(election=election)
+        )
+    else:
+        candidates = Candidate.objects.filter(election=election)
 
-    # for position in positions:
-    #     position.has_candidates=False
-    #     for canidate in candidates:
-    #         if canidate.position==position :
-    #             position.has_candidates=True
+    for position in positions:
+        position.has_candidates=False
+        for canidate in candidates:
+            if canidate.position==position :
+                position.has_candidates=True
     
 
 
-    # # Pass the filtered candidates, positions, and election to the template
-    # isDisabled= ''
-    # vote_slip=None
-    # voted_candidates= None
+    # Pass the filtered candidates, positions, and election to the template
+    isDisabled= ''
+    vote_slip=None
+    voted_candidates= None
    
-    # student=getStudentLoggedIn(request=request)
-    # try:
-    #     vote_slip = VoteSlip.objects.get(student=student, election=election)
-    #     voted_candidate_ids=str(vote_slip.candidates).replace('\'','').replace('\"','').replace('[','').replace(']','').replace(' ','')
+    student=getStudentLoggedIn(request=request)
+    try:
+        vote_slip = VoteSlip.objects.get(student=student, election=election)
+        voted_candidate_ids=str(vote_slip.candidates).replace('\'','').replace('\"','').replace('[','').replace(']','').replace(' ','')
 
-    #     voted_candidate_ids = voted_candidate_ids.split(',') 
+        voted_candidate_ids = voted_candidate_ids.split(',') 
         
-    #     # print(f'{voted_candidate_ids} idsssss')
-    #     isDisabled= 'disabled'
+        # print(f'{voted_candidate_ids} idsssss')
+        isDisabled= 'disabled'
             
-    # except Exception as e:
-    #     vote_slip = ''
-    #     isDisabled= ''  
-    #     voted_candidate_ids=''  
+    except Exception as e:
+        vote_slip = ''
+        isDisabled= ''  
+        voted_candidate_ids=''  
         
 
-    # context = {
-    #     'election': election,
-    #     'positions': positions,
-    #     'candidates': candidates,
-    #     'disabled' : isDisabled,
-    #     'voted_ids': voted_candidate_ids
+    context = {
+        'election': election,
+        'positions': positions,
+        'candidates': candidates,
+        'disabled' : isDisabled,
+        'voted_ids': voted_candidate_ids
         
 
-    # }
+    }
 
     return render(request, 'dashboard_templates/dashboard_votes_candidates.html',  get_user_info(request))
 

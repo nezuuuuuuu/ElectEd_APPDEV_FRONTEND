@@ -6,7 +6,7 @@
     {% block content %}
         <!-- DONE -->
         <!-- Search bar -->
-        <div class="flex px-4 border rounded-full w-1/3 border-maroon">
+        <div class="flex w-1/3 px-4 border rounded-full border-maroon">
             <form method="get" action="{% url 'votes' %}" class="flex w-full">
                 <img src="/static/icons/search_icon.svg" class="cursor-pointer" alt="">
                 <input 
@@ -34,16 +34,16 @@
                     {% if election.is_present %}
                    
                         <a href="{% url 'votes_candidates' election.id %}">
-                            <div class="flex flex-col justify-center h-full overflow-hidden text-center border-4 items-left border-maroon rounded-xl text-maroon w-60 transition-shadow transition-transform transform hover:shadow-2xl hover:scale-105 relative">
+                            <div class="relative flex flex-col justify-center h-full overflow-hidden text-center transition-shadow transition-transform transform border-4 items-left border-maroon rounded-xl text-maroon w-60 hover:shadow-2xl hover:scale-105">
                                 <!-- CONTAINER -->
-                                {% if election.image %}
-                                <div class="relative w-full h-40 overflow-hidden">
-                                    <img src="{{ election.image.url }}" class="absolute inset-0 object-cover w-full h-full" alt="{{ election.title }}">
-                                </div>
+                                {% if election.imagePath %}
+                                    <div class="relative w-full h-40 overflow-hidden">
+                                        <img src="{% static 'landingpics/'|add:election.imagePath %}" class="absolute inset-0 object-cover w-full h-full" alt="{{ election.title }}">
+                                    </div>
                                 {% else %}
-                                <div class="relative w-full h-40 overflow-hidden">
-                                    <img src="{% static 'landingpics/teamf  ogi.png' %}" class="absolute inset-0 object-cover w-full h-full" alt="No image available">
-                                </div>
+                                    <div class="relative w-full h-40 overflow-hidden">
+                                        <img src="{% static 'landingpics/teamfogi.png' %}" class="absolute inset-0 object-cover w-full h-full" alt="No image available">
+                                    </div>
                                 {% endif %}
                                 <div class='py-2 pl-5 text-left'>
                                     <h1 class='py-0 text-2xl font-bold text-left bg-white text-maroon'>{{ election.title }}</h1>
@@ -66,36 +66,34 @@
             <div class='container grid w-3 grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 mb-28 px-28 xl:grid-cols-3'>
                 {% if is_future_ctr > 0 %}
                     {% for election in elections %}
-                        {% if elections.exists and election.is_future %}
+                        {% if election.is_future %}
                             <a>
-                                <div class="flex flex-col justify-center h-full overflow-hidden text-center border-4 items-left border-gray-300 rounded-xl text-maroon w-60 transition-shadow transition-transform transform relative">
+                                <div class="relative flex flex-col justify-center h-full overflow-hidden text-center transition-shadow transition-transform transform border-4 border-gray-300 items-left rounded-xl text-maroon w-60">
                                     
                                     <!-- Timer Overlay (on top of everything) -->
-                                    <p id="timer-{{ forloop.counter }}" class="absolute top-0 left-0 w-full text-white2 text-center font-bold pb-20 text-3xl z-30"></p>
+                                    <p id="timer-{{ forloop.counter }}" class="absolute top-0 left-0 z-30 w-full pb-20 text-3xl font-bold text-center text-white2"></p>
     
                                     <!-- Color Overlay covering the entire card -->
-                                    <div class="absolute inset-0 bg-gray-800 bg-opacity-70 z-10"></div>
+                                    <div class="absolute inset-0 z-10 bg-gray-800 bg-opacity-70"></div>
                                     
                                     <!-- Election Image -->
-                                    {% if election.image %}
+                                    {% if election.imagePath %}
                                     <div class="relative w-full h-40 overflow-hidden">
-                                        <img src="{{ election.image.url }}" class="absolute inset-0 object-cover w-full h-full" alt="{{ election.title }}">
+                                        <img src="{% static 'landingpics/'|add:election.imagePath %}" class="absolute inset-0 object-cover w-full h-full" alt="{{ election.title }}">
                                     </div>
                                     {% else %}
                                     <div class="relative w-full h-40 overflow-hidden">
-                                        <img src="{% static 'landingpics/teamf  ogi.png' %}" class="absolute inset-0 object-cover w-full h-full" alt="No image available">
+                                        <img src="{% static 'landingpics/teamfogi.png' %}" class="absolute inset-0 object-cover w-full h-full" alt="No image available">
                                     </div>
                                     {% endif %}
                                     
                                     <!-- Election Content -->
-                                    <div class='py-2 pl-5 text-left relative z-20'>
+                                    <div class='relative z-20 py-2 pl-5 text-left'>
                                         <h1 class='py-0 text-2xl font-bold text-left bg-white text-maroon'>{{ election.title }}</h1>
                                         <p class='py-0 text-xs font-medium text-left bg-white text-grey'><small>{{ election.description }}</small></p>
                                     </div>
                                 </div>
                             </a>
-                        {% elif not elections.exists %}
-                            <p class="font-bold text-black">No elections found matching "{{ request.GET.q|default:'' }}".</p>
                         {% endif %}
                     {% endfor %}
                 {% endif %}
@@ -121,25 +119,24 @@
                     {% if election.is_close %}
                    
                         <a href="{% url 'votes_candidates' election.id %}">
-                            <div class="flex flex-col justify-center h-full overflow-hidden text-center border-4 items-left border-maroon rounded-xl text-maroon w-60 transition-shadow transition-transform transform hover:shadow-2xl hover:scale-105 relative">
+                            <div class="relative flex flex-col justify-center h-full overflow-hidden text-center transition-shadow transition-transform transform border-4 items-left border-maroon rounded-xl text-maroon w-60 hover:shadow-2xl hover:scale-105">
                                 <!-- CONTAINER -->
-                                {% if election.image %}
-                                <div class="relative w-full h-40 overflow-hidden">
-                                    <img src="{{ election.image.url }}" class="absolute inset-0 object-cover w-full h-full" alt="{{ election.title }}">
-                                </div>
+                                {% if election.imagePath %}
+                                    <div class="relative w-full h-40 overflow-hidden">
+                                        <img src="{% static 'landingpics/'|add:election.imagePath %}" class="absolute inset-0 object-cover w-full h-full" alt="{{ election.title }}">
+                                    </div>
                                 {% else %}
-                                <div class="relative w-full h-40 overflow-hidden">
-                                    <img src="{% static 'landingpics/teamf  ogi.png' %}" class="absolute inset-0 object-cover w-full h-full" alt="No image available">
-                                </div>
+                                    <div class="relative w-full h-40 overflow-hidden">
+                                        <img src="{% static 'landingpics/teamfogi.png' %}" class="absolute inset-0 object-cover w-full h-full" alt="No image available">
+                                    </div>
                                 {% endif %}
-                                <div class='py-2 pl-5 text-left'>
-                                    <h1 class='py-0 text-2xl font-bold text-left bg-white text-maroon'>{{ election.title }}</h1>
-                                    <p class='py-0 text-xs font-medium text-left bg-white text-grey'><small>{{ election.description }}</small></p>
-                                </div>
+                                    <div class='py-2 pl-5 text-left'>
+                                        <h1 class='py-0 text-2xl font-bold text-left bg-white text-maroon'>{{ election.title }}</h1>
+                                        <p class='py-0 text-xs font-medium text-left bg-white text-grey'><small>{{ election.description }}</small></p>
+                                    </div>
                             </div>
                         </a>
-                    {% elif not elections.exists  %}
-                        <p class="font-bold text-black">Closed elections found matching "{{ request.GET.q|default:'' }}".</p>
+                    
                     {% endif %}
                 {% endfor %}
             </div>
@@ -173,7 +170,7 @@
                     const now = new Date().getTime();
                   
                     const distance = countDownDate - now;
-    
+                    
                     if (distance < 0) {
                         clearInterval(interval);
                         document.getElementById(timerId).remove(); // Remove the timer element
@@ -188,6 +185,7 @@
                             `${days}d ${hours}h ${minutes}m ${seconds}s`;
                     }
                 }, 1000);
+                
             });
         });
     </script>
