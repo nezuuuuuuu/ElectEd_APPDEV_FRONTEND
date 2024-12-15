@@ -118,12 +118,12 @@ def votes_candidates(request, election_id):
     # Filter candidates based on the current election and search query
     try:
       
+      
         response = requests.get(candidate_by_election)
         response.raise_for_status()  
         data = response.json() 
         candidates = data
         disabled=''
-      
         response=None
         response = requests.get(election_by_id)
         response.raise_for_status()  
@@ -343,58 +343,47 @@ def getStudentLoggedIn(request):
     return data
 
 def update_results(election_id):
-    # API URLs
-    candidate_by_election_url = f"http://localhost:5196/api/Candidates/election/{election_id}"
-    position_by_election_url = f"http://localhost:5196/api/Positions/election/{election_id}"
+    # API endpoints
+    candidate_by_election = f"http://localhost:5196/api/Candidates/election/{election_id}"
+    election_by_id = f"http://localhost:5196/api/Elections/{election_id}"
+    position_by_election = f"http://localhost:5196/api/Positions/election/{election_id}"
 
     # Fetch candidates
-    response = requests.get(candidate_by_election_url)
+    response = requests.get(candidate_by_election)
     response.raise_for_status()
     candidates = response.json()
 
-    # Fetch positions
-    response = requests.get(position_by_election_url)
-    response.raise_for_status()
-    positions = response.json()
-
-    # Process each position
-    for position in positions:
-        # Get candidates for the current position
-        position_candidates = [
-            candidate for candidate in candidates if candidate.get('positionId') == position.get('id')
-        ]
-
-        # Sort candidates by vote count (highest to lowest)
-        position_candidates.sort(key=lambda x: x.get('vote_count', 0), reverse=True)
-
-        max_winners = position.get('max_selection', 1)  # Default to 1 winner if not specified
-
-        # Determine the last winner's vote count
-        if len(position_candidates) > max_winners:
-            last_winner_vote_count = position_candidates[max_winners - 1].get('vote_count', 0)
-        else:
-            last_winner_vote_count = position_candidates[-1].get('vote_count', 0) if position_candidates else 0
-
-        # Mark winners
-        for candidate in position_candidates:
-            candidate['is_winner'] = candidate.get('vote_count', 0) >= last_winner_vote_count
-
-    return positions, candidates
-
-def results_page(request, election_id):
-    election_by_id_url = f"http://localhost:5196/api/Elections/{election_id}"
-    candidate_by_election_url = f"http://localhost:5196/api/Candidates/election/{election_id}"
-    position_by_election_url = f"http://localhost:5196/api/Positions/election/{election_id}"
-
-    # Update results
-    positions, candidates = update_results(election_id)
-
     # Fetch election details
-    response = requests.get(election_by_id_url)
+    response = requests.get(election_by_id)
     response.raise_for_status()
     election = response.json()
 
-    # Check if positions have candidates
+    # Fetch positions
+    response = requests.get(position_by_election)
+    response.raise_for_status()
+    positions = response.json()
+
+    # Process each position and update winners
+    for position in positions:
+        # Filter candidates for the current position
+        position_candidates = [candidate for candidate in candidates if candidate['positionId'] == position['id']]
+        max_winners = position['maxSelection']
+
+        # Skip if the number of candidates is less than or equal to max_winners
+        if len(position_candidates) <= max_winners:
+            continue
+
+        # Sort candidates by vote count
+        sorted_candidates = sorted(position_candidates, key=lambda c: c['voteCount'], reverse=True)
+
+        # Determine the vote count of the last possible winner
+        last_winner_vote_count = sorted_candidates[max_winners - 1]['voteCount']
+
+        # Mark candidates as winners or not
+        for candidate in sorted_candidates:
+            candidate['is_winner'] = candidate['voteCount'] >= last_winner_vote_count
+
+     # Check if positions have candidates
     for position in positions:
         position['has_candidates'] = False  # Initialize 'has_candidates' as False
         for candidate in candidates:
@@ -405,16 +394,28 @@ def results_page(request, election_id):
     # Check if there are no positions or candidates
     no_positions = not positions
     no_candidates = not candidates
+        
 
-    context = {
-        'election': election,
+    # Return the processed data
+    return {
         'positions': positions,
-        'candidates': candidates,
+        'candidates':  sorted(candidates, key=lambda c: c['voteCount'], reverse=True),
+        'election': election,
         'no_positions': no_positions,
         'no_candidates': no_candidates,
     }
 
+
+def results_page(request, election_id):
+    # Get results and other user context
+    results_context = update_results(election_id)
+    user_info = get_user_info(request)  # Assuming this is a dict with user info
+
+    # Merge context dictionaries
+    context = {**results_context, **user_info}
+
     return render(request, 'dashboard_templates/dashboard_check_results.html', context | get_user_info(request))
+
 
 
 def get_voteSlip_by_election_student( election_id, student_id):

@@ -99,7 +99,10 @@
                 {% endif %}
                 
                 {% if is_future_ctr == 0 %}
-                    <p>No upcoming elections</p>
+                <div class="pt-2 ml-4 flex items-center gap-2">
+                    <img src="{% static 'landingpics/empty_icon.png' %}" alt="Empty icon" class="w-12 h-auto" >
+                    <p class="text-maroon text-sm font-medium">No upcoming elections.</p>
+                </div>
                 {% endif %}
             </div>
         </div>
