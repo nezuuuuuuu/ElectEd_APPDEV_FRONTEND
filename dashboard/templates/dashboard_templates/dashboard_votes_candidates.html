@@ -350,9 +350,10 @@
         
         
         function confirmSubmit() {
+           
             // Prepare the data to send to the server
             const votes = [];
-
+            
             // Collect the selected candidates
             for (const position in selectedCandidates) {
                 if (selectedCandidates.hasOwnProperty(position)) {
@@ -362,6 +363,7 @@
                         candidate_id: candidate.candidate_id,
                         election_id:'{{election.id}}'
                     });
+                    
                 }
             }
 
