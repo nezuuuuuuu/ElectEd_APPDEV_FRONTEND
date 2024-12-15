@@ -27,9 +27,6 @@ def get_user_info(request):
     user = request.user
     id = {(user.get_short_name()).split(' ')[0]}
     Logged_id = str(id).replace('-', '').replace('{', '').replace('}', '').replace("'", '').replace('"', '').strip()
-    # if(verif !=1):
-    #     return
-    # print(Logged_id)
   
     initials=user.username.split('.')[0][0].upper()  + user.username.split('.')[1].split('@')[0][0].upper() 
     print(initials)
@@ -73,7 +70,11 @@ def votes(request):
         response = requests.get(api_url)
         response.raise_for_status()  # Raise an error for bad status codes
         data = response.json()  # Parse JSON data
-        for election in data:
+        print(f"{data}asdasd")
+        elections = data.get('result', [])
+
+        for election in elections:
+        
             # Ensure the required keys exist and process dates
             open_date = datetime.fromisoformat(election['openDate'].replace('Z', '+00:00'))
             close_date = datetime.fromisoformat(election['closeDate'].replace('Z', '+00:00'))
@@ -82,9 +83,9 @@ def votes(request):
             if close_date.tzinfo is None:
                 close_date = close_date.replace(tzinfo=timezone.utc)
             
-            print(open_date)
-            print(close_date)
-            print(current_time)
+            # print(open_date)
+            # print(close_date)
+            # print(current_time)
             # Compare dates
             election['is_future'] = open_date > current_time
             election['is_close'] = close_date < current_time
@@ -101,7 +102,7 @@ def votes(request):
 
 
     context = {
-        'elections': data
+        'elections': elections
         
     }
     # context.update(user_info)
@@ -197,73 +198,85 @@ def logout(request):
 @csrf_exempt
 @require_POST
 def submit_votes(request):
-    # try:
-    #     # Parse the JSON data from the request body
-    #     data = json.loads(request.body)
+    try:
+        # Parse the JSON data from the request body
+        data = json.loads(request.body)
 
-    #     # Extract votes from the data
-    #     votes = data.get('votes', [])
-    #     ids=[]
-    #     i=0
+        # Extract votes from the data
+        votes = data.get('votes', [])
+        ids=[]
+        i=0
       
-    #     election=None
+        election=None
 
-    #     if not votes:
-    #         # If no votes are provided, return an error response
-    #         return JsonResponse({'success': False, 'error': 'No votes provided'})
+        if not votes:
+            # If no votes are provided, return an error response
+            return JsonResponse({'success': False, 'error': 'No votes provided'})
 
-    #     for vote in votes:
-    #         n=vote.get('candidate_id')
-    #         candidate_id_list=vote.get('candidate_id')
-    #         position_list=vote.get('position')
-    #         n = len(candidate_id_list)  
-    #         for i in range(n):
-    #             candidate_id =candidate_id_list[i]
-    #             position = position_list[i]
+        for vote in votes:
+            n=vote.get('candidate_id')
+            candidate_id_list=vote.get('candidate_id')
+            position_list=vote.get('position')
+            n = len(candidate_id_list)  
+            
+            api_url = "http://localhost:5196/api"
+            
+            # Send a GET request to the API
+            
+            for i in range(n):
 
-    #             # Check if candidate_id and position are present in each vote
-    #             if not candidate_id:
-    #                 return JsonResponse({'success': False, 'error': 'Candidate ID missing in vote'})
-    #             if not position:
-    #                 return JsonResponse({'success': False, 'error': 'Position missing in vote'})
+                candidate_id =candidate_id_list[i]
+                position = position_list[i]
 
-    #             # Attempt to fetch the candidate from the database
-    #             try:
-    #                 candidate = Candidate.objects.get(id=candidate_id)
-    #             except Candidate.DoesNotExist:
-    #                 return JsonResponse({'success': False, 'error': f'Candidate with ID {candidate_id} not found'})
-    #             ids.append(str(candidate_id))
-    #             i+=1
-    #             if(election==None):
-    #                 election=candidate.election
-    #             # Increment the vote count for the selected candidate
-    #             candidate.vote_count += 1
-    #             candidate.save()
+                # Check if candidate_id and position are present in each vote
+                if not candidate_id:
+                    return JsonResponse({'success': False, 'error': 'Candidate ID missing in vote'})
+                if not position:
+                    return JsonResponse({'success': False, 'error': 'Position missing in vote'})
+
+                # Attempt to fetch the candidate from the database
+                try:
+
+                    response = requests.get(f'{api_url}/candidates/{candidate_id}')
+                    response.raise_for_status()  # Raise an error for bad status codes
+                    data = response.json()  # Parse JSON d
+
+                except :
+                    return JsonResponse({'success': False, 'error': f'Candidate with ID {candidate_id} not found'})
+              
+                i+=1
+                if(election==None):
+                    election=data.election
+                # Increment the vote count for the selected candidate
+                candidate.vote_count += 1
+                candidate.save()
        
-    #     # print(candidate.election)
-    #     student = getStudentLoggedIn(request=request) 
-    #     voteslip = VoteSlip(student=student, election=election,candidates=ids)
+        # print(candidate.election)
+
+
+        student = getStudentLoggedIn(request=request) 
+        voteslip = VoteSlip(student=student, election=election,candidates=ids)
            
            
              
-    #         # voteslip.full_clean()  # Optional: Validate before saving
+            # voteslip.full_clean()  # Optional: Validate before saving
  
-    #     voteslip.save()
-    #     votes_candidates(request, candidate.election.id)
+        voteslip.save()
+        votes_candidates(request, candidate.election.id)
             
 
 
-    #     # Return a success response if all votes were processed successfully
-    #     return JsonResponse({'success': True})
+        # Return a success response if all votes were processed successfully
+        return JsonResponse({'success': True})
 
-    # except json.JSONDecodeError:
-    #     logger.error("Invalid JSON data")
-    #     return JsonResponse({'success': False, 'error': 'Invalid JSON data in request'})
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON data")
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data in request'})
     
-    # except Exception as e:
-    #     # Log any unexpected errors
-    #     logger.error(f"Error submitting votes: {e}")
-    #     return JsonResponse({'success': False, 'error': str(e)})
+    except Exception as e:
+        # Log any unexpected errors
+        logger.error(f"Error submitting votes: {e}")
+        return JsonResponse({'success': False, 'error': str(e)})
     print()
 
 from PIL import Image, ImageDraw, ImageFont
